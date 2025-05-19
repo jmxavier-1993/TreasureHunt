@@ -23,21 +23,42 @@ ROXO = (128, 0, 128)
 # Configurações por estágio
 ESTAGIOS = [
     {"tamanho": 7, "tentativas": 10, "bonus": {"+1": 3, "+5": 4, "-1": 5, "-3": 2}},
-    {"tamanho": 9, "tentativas": 12, "bonus": {"+1": 4, "+5": 5, "-1": 6, "-3": 3, "-5": 1}},
-    {"tamanho": 11, "tentativas": 15, "bonus": {"+1": 5, "+5": 6, "-1": 7, "-3": 4, "-5": 2}},
-    {"tamanho": 13, "tentativas": 18, "bonus": {"+1": 6, "+5": 7, "-1": 8, "-3": 5, "-5": 3, "+10": 1}},
-    {"tamanho": 15, "tentativas": 20, "bonus": {"+1": 7, "+5": 8, "-1": 10, "-3": 6, "-5": 4, "+10": 2, "-10": 1}}
+    {
+        "tamanho": 9,
+        "tentativas": 12,
+        "bonus": {"+1": 4, "+5": 5, "-1": 6, "-3": 3, "-5": 1},
+    },
+    {
+        "tamanho": 11,
+        "tentativas": 15,
+        "bonus": {"+1": 5, "+5": 6, "-1": 7, "-3": 4, "-5": 2},
+    },
+    {
+        "tamanho": 13,
+        "tentativas": 18,
+        "bonus": {"+1": 6, "+5": 7, "-1": 8, "-3": 5, "-5": 3, "+10": 1},
+    },
+    {
+        "tamanho": 15,
+        "tentativas": 20,
+        "bonus": {"+1": 7, "+5": 8, "-1": 10, "-3": 6, "-5": 4, "+10": 2, "-10": 1},
+    },
 ]
 
 estagio_atual = 0
 config = ESTAGIOS[estagio_atual]
 TAMANHO_CELULA = LARGURA_INICIAL // config["tamanho"]
-LARGURA, ALTURA = config["tamanho"] * TAMANHO_CELULA, config["tamanho"] * TAMANHO_CELULA + 100
+LARGURA, ALTURA = (
+    config["tamanho"] * TAMANHO_CELULA,
+    config["tamanho"] * TAMANHO_CELULA + 100,
+)
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
 
 # Variáveis do jogo
 tentativas = config["tentativas"]
-tesouro_x, tesouro_y = random.randint(0, config["tamanho"]-1), random.randint(0, config["tamanho"]-1)
+tesouro_x, tesouro_y = random.randint(0, config["tamanho"] - 1), random.randint(
+    0, config["tamanho"] - 1
+)
 matriz = [["" for _ in range(config["tamanho"])] for _ in range(config["tamanho"])]
 fonte = pygame.font.SysFont(None, 40)
 fonte_pequena = pygame.font.SysFont(None, 30)
@@ -45,8 +66,10 @@ fonte_grande = pygame.font.SysFont(None, 60)
 
 # Carregar a imagem do tesouro e redimensioná-la
 try:
-    icone_tesouro = pygame.image.load('tesouro.png')
-    icone_tesouro = pygame.transform.scale(icone_tesouro, (TAMANHO_CELULA, TAMANHO_CELULA))
+    icone_tesouro = pygame.image.load("tesouro.png")
+    icone_tesouro = pygame.transform.scale(
+        icone_tesouro, (TAMANHO_CELULA, TAMANHO_CELULA)
+    )
 except:
     # Caso a imagem não seja encontrada, usaremos um retângulo amarelo
     icone_tesouro = pygame.Surface((TAMANHO_CELULA, TAMANHO_CELULA))
@@ -54,45 +77,59 @@ except:
 
 bonus_posicoes = []
 
+
 def distribuir_beneficios():
     global bonus_posicoes
     bonus_posicoes = []
     beneficios = []
-    
+
     for tipo, quantidade in config["bonus"].items():
         beneficios.extend([tipo] * quantidade)
-    
+
     random.shuffle(beneficios)
-    
+
     while beneficios and len(bonus_posicoes) < len(beneficios):
-        posicao = (random.randint(0, config["tamanho"]-1), random.randint(0, config["tamanho"]-1))
-        if posicao != (tesouro_x, tesouro_y) and posicao not in [x[0] for x in bonus_posicoes]:
+        posicao = (
+            random.randint(0, config["tamanho"] - 1),
+            random.randint(0, config["tamanho"] - 1),
+        )
+        if posicao != (tesouro_x, tesouro_y) and posicao not in [
+            x[0] for x in bonus_posicoes
+        ]:
             bonus_posicoes.append((posicao, beneficios[len(bonus_posicoes)]))
+
 
 def reiniciar_estagio():
     global tentativas, matriz, tesouro_x, tesouro_y, bonus_posicoes
     tentativas = config["tentativas"]
     matriz = [["" for _ in range(config["tamanho"])] for _ in range(config["tamanho"])]
-    tesouro_x, tesouro_y = random.randint(0, config["tamanho"]-1), random.randint(0, config["tamanho"]-1)
+    tesouro_x, tesouro_y = random.randint(0, config["tamanho"] - 1), random.randint(
+        0, config["tamanho"] - 1
+    )
     bonus_posicoes.clear()
     distribuir_beneficios()
+
 
 def proximo_estagio():
     global estagio_atual, config, TAMANHO_CELULA, LARGURA, ALTURA, TELA
     estagio_atual += 1
-    
+
     if estagio_atual >= len(ESTAGIOS):
         mostrar_mensagem("PARABÉNS! VOCÊ COMPLETOU TODOS OS ESTÁGIOS!", VERDE, 3000)
         pygame.time.delay(3000)
         pygame.quit()
         sys.exit()
-    
+
     config = ESTAGIOS[estagio_atual]
     TAMANHO_CELULA = LARGURA_INICIAL // config["tamanho"]
-    LARGURA, ALTURA = config["tamanho"] * TAMANHO_CELULA, config["tamanho"] * TAMANHO_CELULA + 100
+    LARGURA, ALTURA = (
+        config["tamanho"] * TAMANHO_CELULA,
+        config["tamanho"] * TAMANHO_CELULA + 100,
+    )
     TELA = pygame.display.set_mode((LARGURA, ALTURA))
     pygame.display.set_caption(f"Caça ao Tesouro - Estágio {estagio_atual + 1}")
     reiniciar_estagio()
+
 
 def desenhar_tabuleiro():
     TELA.fill(BRANCO)
@@ -105,13 +142,21 @@ def desenhar_tabuleiro():
             if matriz[linha][coluna] == "X":
                 cor = definir_cor_proximidade(linha, coluna)
                 texto = fonte.render("X", True, cor)
-                TELA.blit(texto, (x + TAMANHO_CELULA // 2 - 10, y + TAMANHO_CELULA // 2 - 20))
+                TELA.blit(
+                    texto, (x + TAMANHO_CELULA // 2 - 10, y + TAMANHO_CELULA // 2 - 20)
+                )
             elif matriz[linha][coluna] == "T":
                 TELA.blit(icone_tesouro, (x, y))
             elif matriz[linha][coluna] in config["bonus"].keys():
-                texto = fonte.render(matriz[linha][coluna], True,
-                                     AZUL if matriz[linha][coluna"].startswith("+") else VERMELHO)
-                TELA.blit(texto, (x + TAMANHO_CELULA // 2 - 15, y + TAMANHO_CELULA // 2 - 20))
+                texto = fonte.render(
+                    matriz[linha][coluna],
+                    True,
+                    AZUL if matriz[linha][coluna].startswith("+") else VERMELHO,
+                )
+                TELA.blit(
+                    texto, (x + TAMANHO_CELULA // 2 - 15, y + TAMANHO_CELULA // 2 - 20)
+                )
+
 
 def definir_cor_proximidade(linha, coluna):
     distancia = abs(tesouro_x - linha) + abs(tesouro_y - coluna)
@@ -127,6 +172,7 @@ def definir_cor_proximidade(linha, coluna):
     else:
         return VERMELHO
 
+
 def desenhar_botoes():
     pygame.draw.rect(TELA, CINZA, (10, ALTURA - 90, 150, 50))
     texto_tentativas = fonte_pequena.render(f"Tentativas: {tentativas}", True, PRETO)
@@ -140,12 +186,19 @@ def desenhar_botoes():
     texto_estagio = fonte_pequena.render(f"Estágio: {estagio_atual + 1}/5", True, PRETO)
     TELA.blit(texto_estagio, (LARGURA // 2 - 50, ALTURA - 80))
 
+
 def mostrar_mensagem(mensagem, cor, tempo=2000):
     texto = fonte_grande.render(mensagem, True, cor)
-    pygame.draw.rect(TELA, BRANCO, (LARGURA // 4, ALTURA // 3, LARGURA // 2, ALTURA // 3))
-    TELA.blit(texto, (LARGURA // 2 - texto.get_width() // 2, ALTURA // 2 - texto.get_height() // 2))
+    pygame.draw.rect(
+        TELA, BRANCO, (LARGURA // 4, ALTURA // 3, LARGURA // 2, ALTURA // 3)
+    )
+    TELA.blit(
+        texto,
+        (LARGURA // 2 - texto.get_width() // 2, ALTURA // 2 - texto.get_height() // 2),
+    )
     pygame.display.flip()
     pygame.time.delay(tempo)
+
 
 def main():
     global tentativas, matriz, tesouro_x, tesouro_y, estagio_atual
@@ -192,7 +245,10 @@ def main():
                                     rodando = False
                                 break
 
-                if LARGURA - 160 <= x <= LARGURA - 10 and ALTURA - 90 <= y <= ALTURA - 40:
+                if (
+                    LARGURA - 160 <= x <= LARGURA - 10
+                    and ALTURA - 90 <= y <= ALTURA - 40
+                ):
                     reiniciar_estagio()
 
             elif evento.type == pygame.KEYDOWN:
@@ -216,6 +272,7 @@ def main():
                 if evento.key == pygame.K_r:
                     reiniciar_estagio()
                     main()
+
 
 if __name__ == "__main__":
     main()
