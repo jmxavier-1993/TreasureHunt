@@ -1,15 +1,18 @@
-import pygame
-import random
-import sys
+import pygame # Biblioteca para criação de jogos
+import random # Geração de números aleatórios
+import sys # Permite sair do jogo com sys.exit()
 
 # Inicializar pygame
 pygame.init()
 
-# Configurações gerais
+# Tamanho inicial da tela
 LARGURA_INICIAL, ALTURA_INICIAL = 400, 500
+# Criação da janela com tamanho inicial
 TELA = pygame.display.set_mode((LARGURA_INICIAL, ALTURA_INICIAL))
+# Título da janela
 pygame.display.set_caption("Caça ao Tesouro - Estágio 1")
 
+# Definição das cores (em RGB)
 BRANCO = (255, 255, 255)
 PRETO = (0, 0, 0)
 VERMELHO = (255, 0, 0)
@@ -20,7 +23,7 @@ AMARELO = (255, 255, 0)
 LARANJA = (255, 165, 0)
 ROXO = (128, 0, 128)
 
-# Configurações por estágio
+# Configurações dos estágios do jogo
 ESTAGIOS = [
     {"tamanho": 7, "tentativas": 10, "bonus": {"+1": 3, "+5": 4, "-1": 5, "-3": 2}},
     {
@@ -45,21 +48,24 @@ ESTAGIOS = [
     },
 ]
 
-estagio_atual = 0
-config = ESTAGIOS[estagio_atual]
-TAMANHO_CELULA = LARGURA_INICIAL // config["tamanho"]
+estagio_atual = 0 # Começa no primeiro estágio
+config = ESTAGIOS[estagio_atual] # Pega a configuração do estágio atual
+TAMANHO_CELULA = LARGURA_INICIAL // config["tamanho"] # Define o tamanho de cada célula
 LARGURA, ALTURA = (
     config["tamanho"] * TAMANHO_CELULA,
     config["tamanho"] * TAMANHO_CELULA + 100,
 )
-TELA = pygame.display.set_mode((LARGURA, ALTURA))
+TELA = pygame.display.set_mode((LARGURA, ALTURA)) # Atualiza o tamanho da tela
 
 # Variáveis do jogo
 tentativas = config["tentativas"]
+# Gera posição aleatória para o tesouro
 tesouro_x, tesouro_y = random.randint(0, config["tamanho"] - 1), random.randint(
     0, config["tamanho"] - 1
 )
+# Cria a matriz do tabuleiro
 matriz = [["" for _ in range(config["tamanho"])] for _ in range(config["tamanho"])]
+# Definição das fontes
 fonte = pygame.font.SysFont(None, 40)
 fonte_pequena = pygame.font.SysFont(None, 30)
 fonte_grande = pygame.font.SysFont(None, 60)
@@ -75,9 +81,9 @@ except:
     icone_tesouro = pygame.Surface((TAMANHO_CELULA, TAMANHO_CELULA))
     icone_tesouro.fill(AMARELO)
 
-bonus_posicoes = []
+bonus_posicoes = [] # Lista com os bônus e penalidades posicionados
 
-
+# Função que distribui os bônus aleatoriamente na matriz
 def distribuir_beneficios():
     global bonus_posicoes
     bonus_posicoes = []
@@ -98,7 +104,7 @@ def distribuir_beneficios():
         ]:
             bonus_posicoes.append((posicao, beneficios[len(bonus_posicoes)]))
 
-
+# Reinicia o estágio atual
 def reiniciar_estagio():
     global tentativas, matriz, tesouro_x, tesouro_y, bonus_posicoes
     tentativas = config["tentativas"]
@@ -109,7 +115,7 @@ def reiniciar_estagio():
     bonus_posicoes.clear()
     distribuir_beneficios()
 
-
+# Vai para o próximo estágio ou encerra o jogo
 def proximo_estagio():
     global estagio_atual, config, TAMANHO_CELULA, LARGURA, ALTURA, TELA
     estagio_atual += 1
@@ -130,7 +136,7 @@ def proximo_estagio():
     pygame.display.set_caption(f"Caça ao Tesouro - Estágio {estagio_atual + 1}")
     reiniciar_estagio()
 
-
+# Desenha o tabuleiro com base na matriz
 def desenhar_tabuleiro():
     TELA.fill(BRANCO)
     for linha in range(config["tamanho"]):
@@ -157,7 +163,7 @@ def desenhar_tabuleiro():
                     texto, (x + TAMANHO_CELULA // 2 - 15, y + TAMANHO_CELULA // 2 - 20)
                 )
 
-
+# Define cor da letra X dependendo da distância do tesouro
 def definir_cor_proximidade(linha, coluna):
     distancia = abs(tesouro_x - linha) + abs(tesouro_y - coluna)
     max_dist = (config["tamanho"] - 1) * 2
@@ -172,7 +178,7 @@ def definir_cor_proximidade(linha, coluna):
     else:
         return VERMELHO
 
-
+# Desenha a UI inferior
 def desenhar_botoes():
     pygame.draw.rect(TELA, CINZA, (10, ALTURA - 90, 150, 50))
     texto_tentativas = fonte_pequena.render(f"Tentativas: {tentativas}", True, PRETO)
@@ -186,7 +192,7 @@ def desenhar_botoes():
     texto_estagio = fonte_pequena.render(f"Estágio: {estagio_atual + 1}/5", True, PRETO)
     TELA.blit(texto_estagio, (LARGURA // 2 - 50, ALTURA - 80))
 
-
+# Mostra mensagens na tela (ex: vitória, derrota)
 def mostrar_mensagem(mensagem, cor, tempo=2000):
     texto = fonte_grande.render(mensagem, True, cor)
     pygame.draw.rect(
@@ -199,7 +205,7 @@ def mostrar_mensagem(mensagem, cor, tempo=2000):
     pygame.display.flip()
     pygame.time.delay(tempo)
 
-
+# Função principal do jogo
 def main():
     global tentativas, matriz, tesouro_x, tesouro_y, estagio_atual
     rodando = True
@@ -273,6 +279,6 @@ def main():
                     reiniciar_estagio()
                     main()
 
-
+# Inicia o jogo se o script for executado diretamente
 if __name__ == "__main__":
     main()
